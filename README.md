@@ -10,8 +10,12 @@ This project is a Node.js REST API for managing user operations, including user 
 - [Dependency Injection](#dependency-injection)
 - [Authentication and Authorization](#authentication-and-authorization)
 - [Error Handling](#error-handling)
-- [Testing](#testing)
-- [Deployment](#deployment)
+- [Installation](#installation)
+- [Running the Project](#running-the-project)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Acknowledgments](#acknowledgments)
+- [API Reference](#api-reference)
 
 ## Project Structure
 
@@ -69,6 +73,142 @@ Custom middleware, such as `CustomMiddleware.ts`, is used for authentication and
 
 Error handling is implemented throughout the API. If an error occurs during user registration, login, password management, or profile image updates, appropriate error messages are returned to the client.
 
-##
+## Installation
 
-Please note that this is a high-level overview, and you may need to dive deeper into the specific code files and functions to fully understand the implementation details.
+To install the project, follow these steps:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/ChiragParmar07/Server.git
+```
+
+2. Navigate to the project directory:
+
+```bash
+cd Server
+```
+
+3. Install the dependencies:
+
+```bash
+npm install
+```
+
+## Running the Project
+
+To run the project, follow these steps:
+
+1. Start the development server:
+
+```bash
+npm start
+```
+
+The server will start listening on port 5050 by default. You can access the API endpoints by navigating to `http://localhost:5050` in your browser.
+
+## Features
+
+- Use JSON Web Tokens (JWT) for secure authentication and authorization.
+- Implement rate limiting to prevent abuse and protect against brute-force attacks.
+- Implement email verification for new user registrations.
+- Implement password hashing and salting to securely store user passwords.
+- Implement logging and error tracking to help with debugging and monitoring.
+- Implement a comprehensive documentation and API reference for developers.
+
+## Technologies Used
+
+- Node.js: A popular JavaScript runtime for building server-side applications.
+- TypeScript: A statically-typed superset of JavaScript that compiles to plain JavaScript.
+- Express.js: A popular web framework for building APIs in Node.js.
+- InversifyJS: A powerful and lightweight dependency injection framework for TypeScript.
+- Multer: A middleware for handling file uploads in Express.js.
+- Jest or Mocha: Popular testing frameworks for writing unit and integration tests in Node.js.
+- MongoDB or PostgreSQL: A popular NoSQL or SQL database for storing user data.
+
+## Acknowledgments
+
+- If you find this project helpful or inspiring, please consider starring the repository and sharing it with your friends and colleagues.
+- If you have any questions or need assistance, please don't hesitate to reach out.
+
+## API Reference
+
+#### Create a new user
+
+```http
+POST /user
+```
+
+| Parameter      | Type     | Description                                                                                                                                                 |
+| :------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`         | `string` | **Required**. The user's full name.                                                                                                                         |
+| `userName`     | `string` | **Required**. The user name. Must be unique.                                                                                                                |
+| `gender`       | `string` | **Required**. The user's gender.                                                                                                                            |
+| `email`        | `string` | **Required**. The user's email address. Must be unique and in a valid format.                                                                               |
+| `password`     | `string` | **Required**. The user's password.Must be at least 8 characters long and contain a mix of uppercase and lowercase letters, numbers, and special characters. |
+| `profileImage` | `file`   | The user's profile image. Must be a valid image file (e.g., JPG, PNG).                                                                                      |
+
+#### User login
+
+```http
+POST /user/login
+```
+
+| Parameter  | Type     | Description                             |
+| :--------- | :------- | :-------------------------------------- |
+| `email`    | `string` | **Required**. The user's email address. |
+| `password` | `string` | **Required**. The user's password.      |
+
+#### Update user password
+
+```http
+POST /user/updatepassword
+```
+
+| Parameter          | Type     | Description                                                                                                                                                      |
+| :----------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `email`            | `string` | **Required**. The user's email address.                                                                                                                          |
+| `current_password` | `string` | **Required**. The user's current password.                                                                                                                       |
+| `new_password`     | `string` | **Required**. The user's new password. Must be at least 8 characters long and contain a mix of uppercase and lowercase letters, numbers, and special characters. |
+
+#### Forgot password
+
+```http
+POST /user/forgotpassword
+```
+
+| Parameter | Type     | Description                             |
+| :-------- | :------- | :-------------------------------------- |
+| `email`   | `string` | **Required**. The user's email address. |
+
+#### Reset password
+
+```http
+POST /user/resetpassword/:token
+```
+
+| Parameter  | Type     | Description                                                                                                                                                      |
+| :--------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `password` | `string` | **Required**. The user's new password. Must be at least 8 characters long and contain a mix of uppercase and lowercase letters, numbers, and special characters. |
+| `token`    | `string` | **Required**. The password reset token sent to the user's email address.                                                                                         |
+
+#### Get current logged in user information
+
+```http
+GET /user/get-current-user
+```
+
+| Parameter       | Type     | Description                                                                                                    |
+| :-------------- | :------- | :------------------------------------------------------------------------------------------------------------- |
+| `Authorization` | `string` | **Required**. The user's JWT token. Must be included in the request header as `Authorization: Bearer <token>`. |
+
+#### Update user profile image
+
+```http
+PATCH /user/update-user-profile-image
+```
+
+| Parameter       | Type     | Description                                                                                                    |
+| :-------------- | :------- | :------------------------------------------------------------------------------------------------------------- |
+| `Authorization` | `string` | **Required**. The user's JWT token. Must be included in the request header as `Authorization: Bearer <token>`. |
+| `profile_image` | `file`   | **Required**. The new user's profile image. Must be a valid image file (e.g., JPG, PNG).                       |
