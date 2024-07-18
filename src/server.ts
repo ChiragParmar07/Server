@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { InversifyExpressServer } from 'inversify-express-utils';
-import * as bodyParser from 'body-parser';
 import helmet from 'helmet';
 import express from 'express';
 import dotenv from 'dotenv';
@@ -9,9 +8,8 @@ import morgan from 'morgan';
 import * as path from 'path';
 import { RequestHandler } from 'express-serve-static-core';
 import { iocContainer } from './inversify.config';
-
-import './controller/index';
 import ServerConfig from './config/server.config';
+import './controller/index';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -31,14 +29,21 @@ server.setConfig((app: express.Application) => {
   app.use(helmet());
   app.set('port', serverConfig.port);
 
-  // app.use(bodyParser.text() as RequestHandler);
-  // app.use(bodyParser.json({ limit: '50mb' }) as RequestHandler);
-  // app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }) as RequestHandler);
   const cacheTime = 31536000;
   app.use(express.static('assets', { maxAge: cacheTime }) as RequestHandler);
 });
 
 const app = server.build();
+
+app.get('/', (req, res) => {
+  try {
+    res.status(200).json({ message: 'Hello, World!' });
+  } catch (error) {
+    console.log('error', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.listen(app.get('port'), () => {
   console.log(
     `========== Server is running on port ${app.get('port')}, ${app.get('env')}, ${
