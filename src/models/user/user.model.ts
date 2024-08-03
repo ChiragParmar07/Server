@@ -1,18 +1,19 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 import bcryptjs from 'bcryptjs';
-import { GENDER, USER_STATUS } from '../../constants/key.constants';
+import { GENDER, ROLES, USER_STATUS } from '../../constants/key.constants';
 import { GlobleMiddleware } from '../../middlewares/globle.middleware';
 import { NewUserRequest } from './new-user-request.model';
 
 export interface UserDocument extends Document {
   _id: string;
   name: string;
-  userName: string;
   gender: GENDER;
-  email: string;
+  profileImage: any;
   phone: Number;
-  profileImageUrl: any;
+  userName: string;
+  email: string;
   password: string;
+  role: ROLES;
   status: USER_STATUS;
   passwordChangedAt: Date;
   passwordResetToken: string;
@@ -28,39 +29,112 @@ export interface UserDocument extends Document {
 }
 
 const userSchema: Schema<UserDocument> = new Schema<UserDocument>({
-  _id: { type: 'string', required: true, trim: true },
-  name: { type: 'string', required: true, trim: true },
-  userName: { type: 'string', required: true, trim: true, unique: true },
-  gender: { type: 'string', required: true, trim: true, enum: GENDER },
-  email: { type: 'string', required: true, trim: true, unique: true },
-  phone: { type: 'Number', required: true, unique: true },
-  profileImageUrl: { type: 'object' },
-  password: { type: 'string', required: true, trim: true, min: 8, max: 16 },
-  status: { type: 'string', required: true, trim: true, enum: USER_STATUS },
-  passwordChangedAt: { type: Date },
-  passwordResetToken: { type: 'string' },
-  passwordResetExpires: { type: 'Number' },
-  lastLoginDate: { type: 'Date', required: true, default: new Date() },
-  loginCount: { type: 'Number', required: true, default: 1 },
-  deleted: { type: 'Boolean', required: true, default: false },
-  deletedBy: { type: 'string' },
-  deletedReason: { type: 'string' },
-  deletedDate: { type: Date },
-  createdAt: { type: Date, default: new Date() },
-  updatedAt: { type: Date, default: new Date() },
+  _id: {
+    type: 'string',
+    required: true,
+  },
+  name: {
+    type: 'string',
+    required: true,
+    trim: true,
+  },
+  gender: {
+    type: 'string',
+    required: true,
+    enum: GENDER,
+  },
+  profileImage: {
+    type: 'object',
+  },
+  phone: {
+    type: 'Number',
+    required: true,
+    unique: true,
+  },
+  userName: {
+    type: 'string',
+    required: true,
+    unique: true,
+  },
+  email: {
+    type: 'string',
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: 'string',
+    required: true,
+    min: 8,
+    max: 16,
+  },
+  role: {
+    type: 'string',
+    required: true,
+    default: ROLES.USER,
+    enum: ROLES,
+  },
+  status: {
+    type: 'string',
+    default: USER_STATUS.ACTIVE,
+    required: true,
+    enum: USER_STATUS,
+  },
+  passwordChangedAt: {
+    type: Date,
+  },
+  passwordResetToken: {
+    type: 'string',
+  },
+  passwordResetExpires: {
+    type: 'Number',
+  },
+  lastLoginDate: {
+    type: 'Date',
+    required: true,
+    default: new Date(),
+  },
+  loginCount: {
+    type: 'Number',
+    required: true,
+    default: 1,
+  },
+  deleted: {
+    type: 'Boolean',
+    required: true,
+    default: false,
+  },
+  deletedBy: {
+    type: 'string',
+  },
+  deletedReason: {
+    type: 'string',
+  },
+  deletedDate: {
+    type: Date,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+    default: new Date(),
+  },
 });
 
+// User model
 export const UserModel: Model<UserDocument> = mongoose.model<UserDocument>('user', userSchema);
 
 export class User {
   public _id: string;
   public name: string;
-  public userName: string;
   public gender: GENDER;
-  public email: string;
+  public profileImage: any;
   public phone: Number;
-  public profileImageUrl: any;
+  public userName: string;
+  public email: string;
   public password: string;
+  public role: ROLES;
   public status: USER_STATUS;
   public passwordChangedAt: Date;
   public passwordResetToken: string;
@@ -91,24 +165,18 @@ export class User {
 
     user._id = GlobleMiddleware.genrateId();
     user.name = body.name;
-    user.userName = body.userName;
     user.gender = body.gender;
-    user.email = body.email;
+    user.profileImage = body?.profileImage;
     user.phone = body.phone;
-    user.profileImageUrl = body?.profileImageUrl;
+    user.userName = body.userName;
+    user.email = body.email;
     user.password = await bcryptjs.hash(body.password as string, this.PASSWORD_ENCRYPT_LEVEL);
-    user.status = USER_STATUS.ACTIVE;
     user.passwordChangedAt = null;
     user.passwordResetToken = null;
     user.passwordResetExpires = null;
-    user.lastLoginDate = new Date();
-    user.loginCount = 1;
-    user.deleted = false;
     user.deletedBy = null;
     user.deletedReason = null;
     user.deletedDate = null;
-    user.createdAt = new Date();
-    user.updatedAt = new Date();
 
     return user;
   }
@@ -117,13 +185,13 @@ export class User {
    * This static method is used to generate the payload for updating a user's profile image.
    * It returns an object with the necessary MongoDB update operation to set the new profile image URL and update the updatedAt timestamp.
    *
-   * @param profileImageUrl - The new profile image URL to be set for the user.
+   * @param profileImage - The new profile image URL to be set for the user.
    * @returns An object representing the MongoDB update operation.
    */
-  public static getUpdateUserProfileImagePayload(profileImageUrl: any) {
+  public static getUpdateUserProfileImagePayload(profileImage: any) {
     return {
       $set: {
-        profileImageUrl,
+        profileImage,
         updatedAt: new Date(),
       },
     };

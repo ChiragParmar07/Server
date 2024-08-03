@@ -5,7 +5,8 @@ import multerS3 from 'multer-s3';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
-const bucketName = process.env.AWS_S3_BUCKET_NAME;
+const bucketName = process.env.AWS_S3_BUCKET_NAME || 'users-images-bucket-1';
+
 //s3 client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -81,10 +82,16 @@ export class UploadUtil {
     return upload.single('profileImage'); // Replace 'image' with your actual field name
   }
 
-  public static deleteImage(key: string, bucketName: string = process.env.AWS_S3_BUCKET_NAME) {
-    const params = { Bucket: bucketName, Key: key };
+  public static deleteImage(key: string) {
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+    };
+
     return new Promise<boolean>((resolve, reject) => {
       const command = new DeleteObjectCommand(params);
+
+      // Call S3 to delete the object
       s3.send(command, (err, data) => {
         if (err) {
           reject(err);

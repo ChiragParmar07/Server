@@ -25,7 +25,7 @@ server.setConfig((app: express.Application) => {
   app.use(express.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }));
 
   app.use(cors());
-  app.use(morgan('dev'));
+  // app.use(morgan('dev'));
   app.use(helmet());
   app.set('port', serverConfig.port);
 

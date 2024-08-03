@@ -13,21 +13,19 @@ export default class ServerConfig {
   public environment: 'development' | 'staging' | 'production';
   public developerName: string;
   public port: number;
-  public database: { defaultDatabase: string };
+  public dbURL: string;
+  public database: string;
 
   /**
    * Constructor
    */
-  constructor() {
-    this.database = {
-      defaultDatabase: '',
-    };
-  }
+  constructor() {}
 
   public initialize(): void {
     // Set the developer name
-    this.developerName = process.env.DEVELOPER_NAME;
+    this.developerName = process.env.DEVELOPER_NAME || 'unknown';
 
+    // Set the node environment
     const nodeEnvironment = process.env.NODE_ENV;
     switch (nodeEnvironment?.trim()) {
       case 'production':
@@ -41,12 +39,14 @@ export default class ServerConfig {
         break;
     }
 
-    //Connect with MongoDB
-    this.database.defaultDatabase = process.env.MONGODB_DATABASE_NAME || 'Test';
-    this.initializeMongoDb(this.database.defaultDatabase, process.env.MONGODB_URL);
-
     // Set the port
-    this.port = parseInt(process.env.PORT) || 4100;
+    this.port = Number(process.env.PORT) || 5050;
+
+    //Connect with MongoDB
+    const mongodbUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017';
+    this.database = process.env.MONGODB_DATABASE_NAME || 'Test';
+    this.dbURL = mongodbUrl + this.database;
+    this.initializeMongoDb();
   }
 
   /**
@@ -55,12 +55,10 @@ export default class ServerConfig {
    * @param dbName - The name of the database to connect to.
    * @param dbUri - The URI of the MongoDB server, with a placeholder for the password.
    */
-  private initializeMongoDb(dbName: string, dbUri: string) {
-    const dbUrl: any = dbUri?.replace('<password>', process.env.MONGODB_PASSWORD) + dbName;
-
+  private initializeMongoDb() {
     mongoose.set('strictQuery', true);
     mongoose
-      .connect(dbUrl)
+      .connect(this.dbURL)
       .then(() => {
         console.log('===== MongoDB Connected =====');
       })

@@ -43,7 +43,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     };
     const userPayload = { _id: '123', email: 'test@example.com', password: 'hashedPassword' };
@@ -63,7 +63,7 @@ describe('UserService', () => {
       name: '',
       userName: '',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     };
 
@@ -80,7 +80,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     } as any;
     const password = 'password123';
@@ -106,7 +106,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     } as any;
     const password = 'wrongPassword';
@@ -126,7 +126,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     } as any;
     const payload = { currentPassword: 'password123', newPassword: 'newPassword123' };
@@ -149,7 +149,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     } as any;
     const payload = { currentPassword: 'wrongPassword', newPassword: 'newPassword123' };
@@ -169,7 +169,7 @@ describe('UserService', () => {
       name: 'Test User',
       userName: 'testUser',
       gender: GENDER.MALE,
-      profileImageUrl: '',
+      profileImage: '',
       phone: 9898989898,
     } as any;
     const resetToken = 'resetToken';

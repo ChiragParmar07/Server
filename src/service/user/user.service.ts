@@ -2,11 +2,13 @@ import { injectable } from 'inversify';
 import * as jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
+import moment from 'moment';
 import { User, UserModel } from '../../models/user/user.model';
 import { UserDocument } from '../../models/user/user.model';
 import { ValidationUtil } from '../../utils/validation/validation.util';
 import { NewUserRequest } from '../../models/user/new-user-request.model';
 import { forgotPasswordEmail } from '../../utils/email/emailContant';
+import { UploadUtil } from '../../utils/upload/upload.util';
 
 @injectable()
 export class UserService {
@@ -45,22 +47,17 @@ export class UserService {
    * Asynchronously deletes a user by their id.
    *
    * This method queries the database for a user document that matches the provided id
-   * and deletes it. If the user is successfully deleted, it returns the deleted user document.
-   * If no user is found or an error occurs, the method throws an error.
+   * and deletes it. If the user is successfully deleted, it returns true.
    *
    * @param id The id address of the user to delete.
-   * @returns A promise that resolves to the `UserDocument` of the deleted user.
-   * @throws Will throw an error if the query fails or no user is found.
+   * @returns A promise that resolves return true.
+   * @throws Will throw an error if the query fails.
    */
-  public async deleteUserById(id: string): Promise<UserDocument> {
+  public async deleteUserById(id: string): Promise<Boolean> {
     try {
-      const deletedUser = await UserModel.findByIdAndDelete(id);
+      await UserModel.findByIdAndDelete(id);
 
-      if (!deletedUser) {
-        console.log(`User with id ${id} not found.`);
-      }
-
-      return deletedUser;
+      return true;
     } catch (error) {
       throw error;
     }
@@ -81,7 +78,6 @@ export class UserService {
     try {
       return await UserModel.create(payload);
     } catch (error) {
-      console.log('-> Error while insert user data in database.');
       throw error;
     }
   }
@@ -131,29 +127,28 @@ export class UserService {
    * @returns A promise that resolves to a JWT token string if the user creation and token generation are successful.
    * @throws An error if the user input validation fails, user creation fails, or token generation fails.
    */
-  public async createUser(newUserRequest: NewUserRequest): Promise<string> {
+  public async createUser(newUserRequest: NewUserRequest): Promise<any> {
     let user: UserDocument;
     try {
-      // Check user inputs are invalid or not
-      console.log('-> Validating user inputs...');
-      const invalidPayloadMessage = ValidationUtil.validateUserCreateRequest(newUserRequest);
-      if (invalidPayloadMessage) {
-        console.log('-> User inputs are not correct. Stopping the execution.');
-        throw new Error(invalidPayloadMessage);
-      }
-
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Creating payload for new user.`);
       // Create payload for insert new record
       const payload = await User.getNewUserPayload(newUserRequest);
 
       // Insert new user in database
       user = await this.insertNewUser(payload);
-      console.log('-> New user created successfully.');
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: New user created successfully.`);
+      user.password = null;
 
+      // Generate token
       const token = await this.tokenGenerate({ id: user._id, email: user.email });
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Token generated successfully.`);
 
-      return token;
+      return { token, user };
     } catch (error) {
-      // await this.deleteUserById(user?._id);
+      console.error(
+        `${moment().format('YYYY-MM-DD HH:mm:ss')}: Failed to create user. so delete user if already creared.`
+      );
+      await this.deleteUserById(user?._id);
 
       throw error;
     }
@@ -173,6 +168,7 @@ export class UserService {
    */
   public async loginUser(user: UserDocument, password: string): Promise<string> {
     try {
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Comparing passwords...`);
       // Compare given password against current password and return true if present otherwise return false
       await this.comparePassword(password, user.password);
 
@@ -187,7 +183,10 @@ export class UserService {
       await this.updateUserById(user._id, updateModel);
 
       // Generate JWT Token
-      return this.tokenGenerate({ id: user._id, email: user.email });
+      const token = await this.tokenGenerate({ id: user._id, email: user.email });
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Token generated successfully.`);
+
+      return token;
     } catch (error) {
       throw error;
     }
@@ -210,10 +209,10 @@ export class UserService {
       const { currentPassword, newPassword } = payload;
 
       // Check new password is valid or not
-      console.log('-> Validating user inputs...');
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Validating user inputs...`);
       const invalidPayloadMessage = ValidationUtil.validatePassword(newPassword);
       if (invalidPayloadMessage) {
-        console.log('-> Password is not valid. Stopping the execution.');
+        console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Password is not valid. Stopping the execution.`);
         throw new Error(invalidPayloadMessage);
       }
 
@@ -338,12 +337,12 @@ export class UserService {
    *
    * @param body An object containing the user's ID and the new profile image URL.
    * @param body.userId The ID of the user whose profile image is to be updated.
-   * @param body.profileImageUrl The new profile image URL to be set for the user.
+   * @param body.profileImage The new profile image URL to be set for the user.
    * @throws Will throw an error if the update process fails.
    */
   public async updateUserProfileImage(body: any) {
     try {
-      const payload = User.getUpdateUserProfileImagePayload(body.profileImageUrl);
+      const payload = User.getUpdateUserProfileImagePayload(body.profileImage);
 
       await this.updateUserById(body.userId, payload);
     } catch (error) {
@@ -384,6 +383,34 @@ export class UserService {
       return true;
     } else {
       throw new Error('Email or Password incorrect. Check your Login credentials.');
+    }
+  }
+
+  /**
+   * Deletes the uploaded profile image from the S3 bucket.
+   *
+   * This function checks if a file object is provided and contains a 'key' property.
+   * If the condition is met, it logs a message indicating the deletion process,
+   * and then calls the `deleteImage` method from the `UploadUtil` class to remove the image from the S3 bucket.
+   *
+   * @param file - The file object containing the S3 key of the uploaded profile image.
+   * @returns A promise that resolves to `true` if the image deletion is successful, or rejects with an error if the deletion fails.
+   * @throws Will throw an error if the deletion process fails.
+   */
+  public async deleteUploadedProfileImage(file) {
+    try {
+      if (Object.keys(file).length > 0) {
+        console.log(
+          `${moment().format('YYYY-MM-DD HH:mm:ss')}: Deleting profile image which is already uploaded in s3 bucket`
+        );
+
+        await UploadUtil.deleteImage(file['key']);
+      }
+
+      return true;
+    } catch (error) {
+      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')}: Error occurs while deleteting uploded profile image.`);
+      return false;
     }
   }
 }

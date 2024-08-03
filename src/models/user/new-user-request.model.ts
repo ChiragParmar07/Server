@@ -9,7 +9,7 @@ export class NewUserRequest {
   public email: string;
   public gender: GENDER;
   public phone: Number;
-  public profileImageUrl: any;
+  public profileImage: any;
   public password: string;
 
   /**
@@ -31,11 +31,11 @@ export class NewUserRequest {
     }
 
     newUserRequest.name = jsonObject.name;
-    newUserRequest.userName = jsonObject.userName;
+    newUserRequest.userName = jsonObject.userName?.trim();
     newUserRequest.gender = jsonObject.gender;
     newUserRequest.email = jsonObject.email?.toLowerCase();
-    newUserRequest.phone = jsonObject.phone;
-    newUserRequest.profileImageUrl = jsonObject?.profileImageUrl ? jsonObject.profileImageUrl : '';
+    newUserRequest.phone = parseInt(jsonObject.phone);
+    newUserRequest.profileImage = jsonObject?.profileImage ? jsonObject.profileImage : {};
     newUserRequest.password = jsonObject.password;
 
     return newUserRequest;

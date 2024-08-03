@@ -12,7 +12,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe("Name can't be blank");
     });
@@ -25,7 +25,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe('Name can only contain alphabets');
     });
@@ -38,7 +38,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe("UserName can't be blank");
     });
@@ -51,7 +51,7 @@ describe('ValidationUtil', () => {
         email: 'invalid-email',
         phone: 1234567890,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe('Invalid email address');
     });
@@ -64,7 +64,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 12345,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe('Phone number must be at least 10 characters');
     });
@@ -77,7 +77,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: '',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe("password can't be blank");
     });
@@ -90,7 +90,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: 'password',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe('Password must contain an upper case letter');
     });
@@ -103,7 +103,7 @@ describe('ValidationUtil', () => {
         email: 'test@example.com',
         phone: 1234567890,
         password: 'Password1!',
-        profileImageUrl: '',
+        profileImage: '',
       };
       expect(ValidationUtil.validateUserCreateRequest(request)).toBe('');
     });
